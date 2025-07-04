@@ -1,28 +1,59 @@
 import Header from "./components/Header"
 import CustomInput from "./components/CustomInput"
 import { useState } from 'react'
+import { formatter } from "./util/investment"
 
 function App() {
 
   let [data, setData] = useState(
     {
-      inicial: 0,
-      anual: 0,
-      retorno: 0,
-      periodo: 0
+      inicial: 15000,
+      anual: 900,
+      retorno: 5.5,
+      periodo: 12
     }
   )
 
   const handleChange = (field, value) => {
 
     setData((prevData) => {
+
       return {
         ...prevData,
-        [field]: value
+        [field]: +value
       }
     })
-
   }
+
+  let dadosAnuais = []
+
+  const derivateDadosAnuais = () => {
+
+    let valorAcumulado = data.inicial;
+    let jurosAcumulado = 0;
+    for (let i = 1; i <= data.periodo; i++) {
+
+      let jurosDoAno = valorAcumulado * (data.retorno / 100)
+      jurosAcumulado += jurosDoAno
+      valorAcumulado += jurosDoAno + data.anual
+
+
+      dadosAnuais = [
+        ...dadosAnuais,
+        {
+          sequencial: i,
+          valorInvestido: +data.inicial + (data.anual * i),
+          jurosAnual: jurosDoAno,
+          jurosTotal: jurosAcumulado,
+          valorTotal: valorAcumulado
+        }
+      ]
+
+    }
+  }
+
+  derivateDadosAnuais()
+
 
   return (<>
     <Header />
@@ -38,8 +69,25 @@ function App() {
     </div>
     <table id="result">
       <thead>
-        <td></td>
+        <tr>
+          <th>Ano</th>
+          <th>Valor Total</th>
+          <th>Juros Anual</th>
+          <th>Juros Total</th>
+          <th>Valor Investido</th>
+        </tr>
       </thead>
+      <tbody>
+        {dadosAnuais.map(ano =>
+          <tr>
+            <td>{ano.sequencial}</td>
+            <td>{formatter.format(ano.valorTotal)}</td>
+            <td>{formatter.format(ano.jurosAnual)}</td>
+            <td>{formatter.format(ano.jurosTotal)}</td>
+            <td>{formatter.format(ano.valorInvestido)}</td>
+          </tr>
+        )}
+      </tbody>
     </table>
   </>
   )
